@@ -1,7 +1,7 @@
 {
   "Configurations": [
     {
-      "Version": "1.0.0",
+      "Version": "1.0.1",
       "URL": "https://raw.githubusercontent.com/kecajtop/cyd_2432S024/main/images/cyd_2432S024-ESP32_DEV-1.0.0.bin"
     }
   ]
