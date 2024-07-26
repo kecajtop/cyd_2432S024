@@ -2,7 +2,7 @@
   "Configurations": [
     {
       "Board": "ESP32_DEV",
-      "Version": "1.0.0",
+      "Version": "1.0.1",
       "URL": "https://github.com/kecajtop/cyd_2432S024/raw/main/images/cyd_2432S024-ESP32_DEV-1.0.0.bin"
     }
   ]
