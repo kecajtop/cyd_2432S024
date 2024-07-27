@@ -1,0 +1,6 @@
+enable_wifi=0
+enable_selftest=1
+ssid_wifi=test
+password_wifi=test
+auto_load=1
+file_to_load=12345

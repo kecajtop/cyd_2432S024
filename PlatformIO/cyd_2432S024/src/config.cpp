@@ -3,7 +3,6 @@
 #include "macros.h"
 #include <SD.h>
 
-
 extern config_t settings;
 extern const char* ssid;
 extern const char* password;
@@ -13,6 +12,9 @@ int sd_config_status = 0;
 
 int load_config(void)
 {
+
+  settings.start = 0;
+
 	char value_string[VALUE_MAX_LENGTH];
 	print_kln("[M] Loading config from SD CARD ... ");
 	if (SD_findKey(F("enable_selftest"), value_string))
@@ -70,7 +72,7 @@ int load_config(void)
 		  settings.enable_wifi = 0;
     #endif 
 		Serial.print(F("\t enable_wifi = not found, default = "));
-		Sprint_kln(settings.enable_wifi);
+		print_kln(settings.enable_wifi);
 	}
 	
   if (SD_findKey(F("ssid_wifi"), value_string))

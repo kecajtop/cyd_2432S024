@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#define _CONFIG_VERSION "R1"
+#define _CONFIG_VERSION "REV1"
 #define _CONFIG_START 1
 
 #define _FW_VERSION "1.00"
@@ -20,6 +20,7 @@ struct config_t
     int enable_wifi;
     int enable_selftest;
     int auto_load;
+    int start;
     String file_to_load;
     String ssid_wifi;
     String password_wifi;

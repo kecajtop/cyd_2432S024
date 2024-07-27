@@ -9,5 +9,6 @@
 #include "Arduino.h"
 
 int sd_init();
+void printDirectory(File dir, int numTabs);
 
 #endif
