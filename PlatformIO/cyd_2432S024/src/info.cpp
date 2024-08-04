@@ -19,7 +19,8 @@ void lib_info(void)
 void app_info(void)
 {	
   infoln("INFO ");
-  print_k(STR(APP_INFO));
+  print_k("\t");
+  print_kln(STR(APP_INFO));
   //display_selftest_msg("APP_INFO", STR(APP_INFO));
   print_k("\tFW_VERSION: ");
   print_kln(_FW_VERSION_ESP32);

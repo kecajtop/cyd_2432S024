@@ -115,7 +115,7 @@ int load_config(void)
     password = settings.password_wifi.c_str();
 
 	}
-	msgln("[M] Done");
+	msgln("Done");
 	return sd_config_status;
 }
 

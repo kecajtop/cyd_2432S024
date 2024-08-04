@@ -18,7 +18,8 @@ unsigned long last = 0;
 
 int initWiFi(const char *host_name) 
 {
-  uint8_t i = 0;
+  uint16_t i = 0;
+  uint16_t n = 0;
   WiFi.disconnect(true);
   WiFi.setHostname(host_name);
   WiFi.mode(WIFI_STA);
@@ -26,12 +27,19 @@ int initWiFi(const char *host_name)
   WiFi.onEvent(WiFiEvent);
   msgln("Connecting to WiFi ");
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
+    print_k('.');
     i++;
+    n++;
     delay(100);
-    if (i>=100)
+    if (n>50)
     {
-      print_kln("Failed");
+        n = 0;
+        print_kln();
+    }
+    if (i>100)
+    {
+      print_kln();
+      msgln("WiFi Connection Failed");
       return 0;
     }
   }
@@ -125,90 +133,90 @@ void WiFiEvent(WiFiEvent_t event)
 
     switch (event) {
         case ARDUINO_EVENT_WIFI_READY: 
-            Serial.println("[E] WiFi interface ready");
+            msgln("WiFi interface ready");
             break;
         case ARDUINO_EVENT_WIFI_SCAN_DONE:
-            Serial.println("[E] Completed scan for access points");
+            msgln("Completed scan for access points");
             break;
         case ARDUINO_EVENT_WIFI_STA_START:
-            Serial.println("[E] WiFi client started");
+            msgln("WiFi client started");
             break;
         case ARDUINO_EVENT_WIFI_STA_STOP:
-            Serial.println("[E] WiFi clients stopped");
+            msgln("WiFi clients stopped");
             break;
         case ARDUINO_EVENT_WIFI_STA_CONNECTED:
-            //Serial.println("[E] Connected to access point");
+            //msgln("Connected to access point");
             break;
         case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-            Serial.println("[E] Disconnected from WiFi access point");
+            msgln("Disconnected from WiFi access point");
             //stop_ntp();
             wifiConnected = DISCONNECTED;
             break;
         case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
-            Serial.println("[E] Authentication mode of access point has changed");
+            msgln("Authentication mode of access point has changed");
             break;
         case ARDUINO_EVENT_WIFI_STA_GOT_IP:
             //Serial.print("[E] Obtained IP address: ");
-            Serial.println(WiFi.localIP());
+            msgln(WiFi.localIP());
             //start_ntp();
             wifiConnected = CONNECTED;
             break;
         case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-            Serial.println("[E] Lost IP address and IP address is reset to 0");
+            msgln("Lost IP address and IP address is reset to 0");
             break;
         case ARDUINO_EVENT_WPS_ER_SUCCESS:
-            Serial.println("[E] WiFi Protected Setup (WPS): succeeded in enrollee mode");
+            msgln("WiFi Protected Setup (WPS): succeeded in enrollee mode");
             break;
         case ARDUINO_EVENT_WPS_ER_FAILED:
-            Serial.println("[E] WiFi Protected Setup (WPS): failed in enrollee mode");
+            msgln("WiFi Protected Setup (WPS): failed in enrollee mode");
             break;
         case ARDUINO_EVENT_WPS_ER_TIMEOUT:
-            Serial.println("[E] WiFi Protected Setup (WPS): timeout in enrollee mode");
+            msgln("WiFi Protected Setup (WPS): timeout in enrollee mode");
             break;
         case ARDUINO_EVENT_WPS_ER_PIN:
-            Serial.println("[E] WiFi Protected Setup (WPS): pin code in enrollee mode");
+            msgln("WiFi Protected Setup (WPS): pin code in enrollee mode");
             break;
         case ARDUINO_EVENT_WIFI_AP_START:
-            Serial.println("[E] WiFi access point started");
+            msgln("WiFi access point started");
             break;
         case ARDUINO_EVENT_WIFI_AP_STOP:
-            Serial.println("[E] WiFi access point stopped");
+            msgln("WiFi access point stopped");
             break;
         case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-            Serial.println("[E] Client connected");
+            msgln("Client connected");
             break;
         case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
             Serial.println("[E]Client disconnected");
             break;
         case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
-            Serial.println("[E] Assigned IP address to client");
+            msgln("Assigned IP address to client");
             break;
         case ARDUINO_EVENT_WIFI_AP_PROBEREQRECVED:
-            Serial.println("[E] Received probe request");
+            msgln("Received probe request");
             break;
         case ARDUINO_EVENT_WIFI_AP_GOT_IP6:
-            Serial.println("[E] AP IPv6 is preferred");
+            msgln("AP IPv6 is preferred");
             break;
         case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
-            Serial.println("[E] STA IPv6 is preferred");
+            msgln("STA IPv6 is preferred");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP6:
-            Serial.println("[E] Ethernet IPv6 is preferred");
+            msgln("Ethernet IPv6 is preferred");
             break;
         case ARDUINO_EVENT_ETH_START:
-            Serial.println("[E] Ethernet started");
+            msgln("Ethernet started");
             break;
         case ARDUINO_EVENT_ETH_STOP:
-            Serial.println("[E] Ethernet stopped");
+            msgln("Ethernet stopped");
             break;
         case ARDUINO_EVENT_ETH_CONNECTED:
-            Serial.println("[E] Ethernet connected");
+            msgln("Ethernet connected");
             break;
         case ARDUINO_EVENT_ETH_DISCONNECTED:
-            Serial.println("[E] Ethernet disconnected");
+            msgln("Ethernet disconnected");
             break;
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Serial.println("[E] Obtained IP address");
+            msgln("Obtained IP address");
             break;
         default: break;
     }
