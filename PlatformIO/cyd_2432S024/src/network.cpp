@@ -24,36 +24,36 @@ int initWiFi(const char *host_name)
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   WiFi.onEvent(WiFiEvent);
-  Serial.print("[M] Connecting to WiFi ");
+  msgln("Connecting to WiFi ");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     i++;
     delay(100);
     if (i>=100)
     {
-      Serial.println("Failed");
+      print_kln("Failed");
       return 0;
     }
   }
-  Serial.print(F("\tIP: "));
-  Serial.println(WiFi.localIP());
-  Serial.print(F("\tRRSI: "));
-  Serial.println(WiFi.RSSI());
+  print_k(F("\tIP: "));
+  print_kln(WiFi.localIP());
+  print_k(F("\tRRSI: "));
+  print_kln(WiFi.RSSI());
   return 1;
 }
 
 void get_network_info(void){
     if(WiFi.status() == WL_CONNECTED) {
-        Serial.print("[*] Network information for ");
-        Serial.println(ssid);
-        Serial.println("[+] BSSID : " + WiFi.BSSIDstr());
-        Serial.print("[+] Gateway IP : ");
-        Serial.println(WiFi.gatewayIP());
-        Serial.print("[+] Subnet Mask : ");
-        Serial.println(WiFi.subnetMask());
-        Serial.println((String)"[+] RSSI : " + WiFi.RSSI() + " dB");
-        Serial.print("[+] ESP32 IP : ");
-        Serial.println(WiFi.localIP());
+        print_k("[*] Network information for ");
+        print_kln(ssid);
+        print_kln("[+] BSSID : " + WiFi.BSSIDstr());
+        print_k("[+] Gateway IP : ");
+        print_kln(WiFi.gatewayIP());
+        print_k("[+] Subnet Mask : ");
+        print_kln(WiFi.subnetMask());
+        print_kln((String)"[+] RSSI : " + WiFi.RSSI() + " dB");
+        print_k("[+] ESP32 IP : ");
+        print_kln(WiFi.localIP());
         Serial.printf("[+] ESP32 Chip model %s Rev %d\n\r", ESP.getChipModel(),
                   ESP.getChipRevision());
         Serial.printf("[+] This chip has %d cores\n\r", ESP.getChipCores());
@@ -71,10 +71,10 @@ void start_ota(void)
         type = "filesystem";
 
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
+      print_kln("Start updating " + type);
     })
     .onEnd([]() {
-      Serial.println("\nEnd");
+      print_kln("\nEnd");
     })
     .onProgress([](unsigned int progress, unsigned int total) {
       Serial.printf("Progress: %u%%\r", (progress / (total / 100)));

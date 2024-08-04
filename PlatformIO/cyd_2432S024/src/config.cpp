@@ -16,7 +16,7 @@ int load_config(void)
   settings.start = 0;
 
 	char value_string[VALUE_MAX_LENGTH];
-	print_kln("[M] Loading config from SD CARD ... ");
+	msgln("Loading config from SD CARD ... ");
 	if (SD_findKey(F("enable_selftest"), value_string))
 	{
 		settings.enable_selftest    = SD_findInt(F("enable_selftest"));
@@ -115,7 +115,7 @@ int load_config(void)
     password = settings.password_wifi.c_str();
 
 	}
-	print_kln("[M] Done");
+	msgln("[M] Done");
 	return sd_config_status;
 }
 
@@ -147,8 +147,8 @@ int SD_findKey(const __FlashStringHelper * key, char * value) {
   File configFile = SD.open(CONFIG_FILE_NAME);
 
   if (!configFile) {
-    Serial.print(F("SD Card: Issue encountered while attempting to open the file "));
-    Serial.println(CONFIG_FILE_NAME);
+    err(F("SD Card: Issue encountered while attempting to open the file "));
+    print_kln(CONFIG_FILE_NAME);
     sd_config_status = 0;
     return 0;
   }

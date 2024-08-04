@@ -2,15 +2,18 @@
 #define config_h
 
 #include "Arduino.h"
+#include "ESP32OTAPull.h"
 
-#define _CONFIG_VERSION "REV1"
-#define _CONFIG_START 1
-
-#define _FW_VERSION "1.00"
-
+#if __has_include("update_settings.h") // optionally override with values in settings.h
+#include "update_settings.h"
+#else
+#define JSON_URL   "https://raw.githubusercontent.com/kecajtop/cyd_2432S024/main/json/cyd_2432S024.json" // this is where you'll post your JSON filter file
+#define _FW_VERSION_ESP32    "1.0.0" // The current version of this program
+#define _SD_FW_NAME_ESP32 "/firmwareESP32.bin"
+#define _SD_FW_NAME_ESP32_BAK "/firmwareESP32.bak"
 #define _PCB_VERSION "REV1"
-
 #define CONFIG_FILE_NAME "/config.txt"
+#endif
 
 #define KEY_MAX_LENGTH    30 // change it if key is longer
 #define VALUE_MAX_LENGTH  30 // change it if value is longer
@@ -29,7 +32,6 @@ struct config_t
 struct pattern_struct_t //place for hard coded pattern
 {
   uint32_t pattern[128][4];
-  char version_of_program[9] = _CONFIG_VERSION;
 };
 
 String HELPER_ascii2String(char *ascii, int length);

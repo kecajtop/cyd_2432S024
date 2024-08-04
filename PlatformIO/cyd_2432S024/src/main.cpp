@@ -1,7 +1,7 @@
 #include "Arduino.h"
+#include "Wire.h"
 #include <EEPROM.h>
 #include <rom/rtc.h>
-#include "I2C_eeprom.h"
 #include <SPI.h>
 #include <SD.h>
 #include <WiFi.h>
@@ -15,26 +15,12 @@
 #include "demos/lv_demos.h"
 #include "macros.h"
 #include "simple_tft.h"
-#include "sd_fw_upgrade.h"
+#include "fw_upgrade.h"
 #include <XPT2046_Touchscreen.h>
-#include "sd_config.h"
-#include "sd_card_csv.h"
-#include "ee_config.h"
+#include "ams.h"
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
-#include "ESP32OTAPull.h"
-
-#if __has_include("update_settings.h") // optionally override with values in settings.h
-#include "update_settings.h"
-#else
-#define JSON_URL   "https://raw.githubusercontent.com/kecajtop/cyd_2432S024/main/json/cyd_2432S024.json" // this is where you'll post your JSON filter file
-#define SSID 	   "<my WiFi SSID>"
-#define PASS       "<my WiFi Password>"
-#define VERSION    "1.0.0" // The current version of this program
-#endif
-
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
-
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -69,12 +55,9 @@ int stauts = 0;
 
 config_t settings;
 
-SimpleSyslog syslog("Tester", "Tester01", "192.168.2.2");
-	// Note:
-	// FAC_USER, and FAC_LOCAL0 through FAC_LOCAL7 are valid facilities
-	// PRI_EMERGENCY, PRI_ALERT, PRI_CRITICAL, PRI_ERROR, PRI_WARNING, PRI_NOTICE, PRI_INFO, and PRI_DEBUG are valid
+static uint32_t prev_ms = 0;
 
-//#define F_CPU 8000000L // CPU clock speed 16 MHz
+SimpleSyslog syslog("Tester", "Tester01", "192.168.2.2");
 
 #define I2C_CLKRATE_400K            400000      // Speed of I2C bus 100KHz
 
@@ -88,22 +71,11 @@ SimpleSyslog syslog("Tester", "Tester01", "192.168.2.2");
 
 #define USE_LV_LOG 1
 
-//SPIClass sdSPI(HSPI);
-
-//I2C_eeprom ee(0x50);
-
 char data_block[128]; 
-
 
 pattern_struct_t pattern;
 
 //syslog.printf(FAC_USER, PRI_WARNING, "Looping around... Uptime: %0.1f minutes", millis() / (float)60000);
-
-
-void callback_dots(int offset, int totallength);
-void callback_percent(int offset, int totallength);
-const char *errtext(int code);
-
 
 //#if LV_USE_LOG != 0
 void my_print( lv_log_level_t level, const char * buf )
@@ -142,13 +114,13 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
     data->point.y = y;
 
     // Print Touchscreen info about X, Y and Pressure (Z) on the Serial Monitor
-    Serial.print("X = ");
-    Serial.print(x);
-    Serial.print(" | Y = ");
-    Serial.print(y);
-    Serial.print(" | Pressure = ");
-    Serial.print(z);
-    Serial.println();
+    print_k("X = ");
+    print_k(x);
+    print_k(" | Y = ");
+    print_k(y);
+    print_k(" | Pressure = ");
+    print_k(z);
+    print_kln();
   }
   else {
     data->state = LV_INDEV_STATE_RELEASED;
@@ -159,7 +131,8 @@ void touchscreen_read(lv_indev_t * indev, lv_indev_data_t * data) {
 static void event_handler_btn1(lv_event_t * e) {
   lv_event_code_t code = lv_event_get_code(e);
   if(code == LV_EVENT_CLICKED) {
-    LV_LOG_USER("Load Button clicked ");
+    LV_LOG_USER("LED Button clicked ");
+    led_toggle();
   }
 }
 
@@ -219,7 +192,7 @@ void lv_create_main_gui(void)
   lv_obj_remove_flag(btn1, LV_OBJ_FLAG_PRESS_LOCK);
 
   btn_label = lv_label_create(btn1);
-  lv_label_set_text(btn_label, "LOAD");
+  lv_label_set_text(btn_label, "LED");
   lv_obj_center(btn_label);
 
   lv_obj_t * btn2 = lv_button_create(lv_screen_active());
@@ -240,28 +213,28 @@ void lv_create_main_gui(void)
   lv_label_set_text(btn_label, "REBOOT");
   lv_obj_center(btn_label);
 
-  lv_example_roller_1();
+  //lv_example_roller_1();
 }
 
 void setup() {
   // put your setup code here, to run once:
   
     Serial.begin(115200);
-    Serial.println("");
+    infoln("Start");
 
     lv_init();
-    static uint32_t prev_ms = millis();
+    
+    prev_ms = millis();
 
     lv_log_register_print_cb(log_print);
 
-      // Start the SPI for the touchscreen and init the touchscreen
+    init_tft();
+
     touchscreenSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
     touchscreen.begin(touchscreenSPI);
     // Set the Touchscreen rotation in landscape mode
     // Note: in some displays, the touchscreen might be upside down, so you might need to set the rotation to 1: touchscreen.setRotation(1);
     touchscreen.setRotation(3);
-
-    init_tft();
 
     clear_display();
     
@@ -275,12 +248,6 @@ void setup() {
 
     set_selftest_tite("SELFTEST"); 
 
-    //convert2pattern();
-    //set_pin_pattern(find_pin(2,4),0);
-    //set_pin_pattern(find_pin(1,6),0);
-    //set_pin_pattern(find_pin(1,5),0);
-    //set_pin_pattern(find_pin(2,3),0);
-    
     build_date();
     
     reset_info();
@@ -288,32 +255,25 @@ void setup() {
     stauts = sd_init();
 
     display_selftest_pass_fail("SD CARD",stauts);
-
-    stauts = sd_new_fw();
-
-    //load_csv("12345");
-
-    //clear_tables();
     
-    
-    //delay(5000);
-
-    //ESP.restart();
-
-    //while(1);
-
-    display_selftest_pass_fail("NEW FIRMWARE",stauts);
-
-    sd_fw_upgrade();
+    if (stauts)
+    {
+      stauts = sd_new_fw();
+      if (stauts)
+      {
+        display_selftest_pass_fail("SD CARD FW.",stauts);
+        sd_fw_upgrade();
+      }
+    }
 
     stauts = load_config();
 
-    display_selftest_pass_fail("config.txt",stauts);
+    display_selftest_pass_fail("CONFIG TXT",stauts);
 
     if (settings.enable_wifi)
     {
-      Serial.printf("[M] Enabling WiFi \n\r");
-      if (initWiFi("Tester"))
+      print_kln("[M] Enabling WiFi");
+      if (initWiFi("Test"))
       {
         display_selftest_pass_fail("WIFI",ST_CONNECTED);
         
@@ -327,67 +287,12 @@ void setup() {
     {
       display_selftest_pass_fail("WIFI",ST_DISABLED);
     }
-
-    ESP32OTAPull ota;
-
-    	// Example 1: See if an update is available (but don't do it).  No callback routine
-	Serial.printf("Check for update, but don't download it.\n");
-  Serial.printf(JSON_URL);
-	int ret = ota
-		.CheckForOTAUpdate(JSON_URL, VERSION, ESP32OTAPull::DONT_DO_UPDATE);
-	Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-
-	// After we've checked, we can obtain the version from the JSON file
-    String otaVersion = ota.GetVersion();
-	Serial.printf("OTA Version Available: %s\n", otaVersion.c_str());
-
-	delay(3000);
-
-	// Example 2
-	Serial.printf("Check for update and download it, but don't reboot.  Display dots.\n");
-	ret = ota
-		.SetCallback(callback_dots)
-		.CheckForOTAUpdate(JSON_URL, VERSION, ESP32OTAPull::UPDATE_BUT_NO_BOOT);
-	Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
-
-	delay(3000);
-
-	// Example 3
-	Serial.printf("Download and install downgrade, but only if the configuration string matches.  Display percentages.\n");
-	ret = ota
-		.SetCallback(callback_percent)
-		.AllowDowngrades(true)
-		.SetConfig("4MB RAM")
-		.CheckForOTAUpdate(JSON_URL, "99.99.99", ESP32OTAPull::UPDATE_AND_BOOT);
-	Serial.printf("CheckForOTAUpdate returned %d (%s)\n\n", ret, errtext(ret));
     
     Wire.begin();
 
     Wire.setClock(I2C_CLKRATE_400K);
 
-    //ee_init();
-
-    if (!ee_info())
-    {
-    //  gpio_error();
-      display_selftest_pass_fail("EEPROM",ST_NOK);
-    //  _mode = _FAIL_MODE;
-    }
-    else
-    {
-      display_selftest_pass_fail("EEPROM",ST_OK);
-    }
-
-    if (settings.start)
-    {
-      Serial.printf("[M] Enabling Auto load \n\r");
-      display_selftest_pass_fail("AUTO LOAD",ST_ENABLED);
-    }
-    else
-    {
-      display_selftest_pass_fail("AUTO LOAD",ST_DISABLED);
-    }
-
+    init_ams();
 
     delay(2000);
 
@@ -405,12 +310,21 @@ void setup() {
     // Function to draw the GUI (text, buttons and sliders)
 
     lv_create_main_gui();
-    
-    while(!settings.start)
-    {
-    
+
+    //ams.drvOn();
+
+    infoln("Ready!");
+}
+
+
+
+void loop()
+{
     lv_task_handler(); /* Handle LVGL tasks */
 
+    //show_graph();
+
+    show_colour();
 
     uint32_t elapsed_ms = millis() - prev_ms;
 
@@ -421,58 +335,6 @@ void setup() {
         /* Update record of when we last updated LVGL's tick count */
         prev_ms += elapsed_ms;
     }          // let this time pass
-    }     
-
-    UsrLogln("Ready!");
-}
-
-void loop()
-{
   
 }
 
-const char *errtext(int code)
-{
-	switch(code)
-	{
-		case ESP32OTAPull::UPDATE_AVAILABLE:
-			return "An update is available but wasn't installed";
-		case ESP32OTAPull::NO_UPDATE_PROFILE_FOUND:
-			return "No profile matches";
-		case ESP32OTAPull::NO_UPDATE_AVAILABLE:
-			return "Profile matched, but update not applicable";
-		case ESP32OTAPull::UPDATE_OK:
-			return "An update was done, but no reboot";
-		case ESP32OTAPull::HTTP_FAILED:
-			return "HTTP GET failure";
-		case ESP32OTAPull::WRITE_ERROR:
-			return "Write error";
-		case ESP32OTAPull::JSON_PROBLEM:
-			return "Invalid JSON";
-		case ESP32OTAPull::OTA_UPDATE_FAIL:
-			return "Update fail (no OTA partition?)";
-		default:
-			if (code > 0)
-				return "Unexpected HTTP response code";
-			break;
-	}
-	return "Unknown error";
-}
-
-
-void callback_percent(int offset, int totallength)
-{
-	static int prev_percent = -1;
-	int percent = 100 * offset / totallength;
-	if (percent != prev_percent)
-	{
-		Serial.printf("Updating %d of %d (%02d%%)...\n", offset, totallength, 100 * offset / totallength);
-    display_firmware_update_progress(offset, totallength);
-		prev_percent = percent;
-	}
-}
-
-void callback_dots(int offset, int totallength)
-{
-	Serial.print(".");
-}

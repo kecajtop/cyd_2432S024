@@ -1,8 +1,20 @@
 #include "Arduino.h"
 #include "macros.h"
-#include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
+#include <TFT_eSPI.h>
+#include <SPI.h>
+#include <XPT2046_Touchscreen.h>
 #include "simple_tft.h"
 #include "Update.h"
+
+//TL_DATUM = Top left
+//TC_DATUM = Top centre
+//TR_DATUM = Top right
+//ML_DATUM = Middle left
+//MC_DATUM = Middle centre
+//MR_DATUM = Middle right
+//BL_DATUM = Bottom left
+//BC_DATUM = Bottom centre
+//BR_DATUM = Bottom right
 
 #define PF_SPACE 22
 #define PF_FONT 4
@@ -28,21 +40,12 @@ void init_tft()
 {
     tft.init();
     tft.setRotation(3);
+          // Start the SPI for the touchscreen and init the touchscreen
 }
 void clear_display(void)
 {
     tft.fillScreen(TFT_WHITE);
 }
-
-//TL_DATUM = Top left
-//TC_DATUM = Top centre
-//TR_DATUM = Top right
-//ML_DATUM = Middle left
-//MC_DATUM = Middle centre
-//MR_DATUM = Middle right
-//BL_DATUM = Bottom left
-//BC_DATUM = Bottom centre
-//BR_DATUM = Bottom right
 
 void display_off()
 {
@@ -168,6 +171,7 @@ void display_selftest_pass_fail(const char * _msg,uint8_t status)
 
 void set_selftest_tite(const char * _msg)
 {
+    delay(1000);
     strcpy(st_msg, _msg);
     line=0;
 }
