@@ -95,23 +95,21 @@ void tcs34725::getData(void) {
     
   hue = sat = lum = (max + min) / 2;
 
-  if (max == min) {
-    hue = sat = 0; // achromatic
-  }
-  else {
-    float d = max - min;
-    sat = (lum > 0.5) ? d / (2 - max - min) : d / (max + min);
-    
-    if (max == r) {
-      hue = (g_ratio - b_ratio) / d + (g_ratio < b_ratio ? 6 : 0);
-    }
-    else if (max == g_ratio) {
-      hue = (b_ratio - r_ratio) / d + 2;
-    }
-    else if (max == b) {
-      hue = (r_ratio - g_ratio) / d + 4;
-    }
-    
-    hue /= 6;
-  }
+  float diff = max-min; // diff of cmax and cmin.
+
+   if (max == min)
+      hue = 0;
+   else if (max == r)
+      hue = fmod((60 * ((g_ratio - b_ratio) / diff) + 360), 360.0);
+   else if (max == g)
+      hue = fmod((60 * ((b_ratio - r_ratio) / diff) + 120), 360.0);
+   else if (max == b)
+      hue = fmod((60 * ((r_ratio - g_ratio) / diff) + 240), 360.0);
+   // if cmax equal zero
+      if (max == 0)
+         sat = 0;
+      else
+         sat = (diff / max) * 100;
+   // compute v
+   value = max * 100;
 }

@@ -124,8 +124,8 @@ void show_colour(void)
   Serial.print(rgb_sensor.hue);
   Serial.print(F(" Sat:"));
   Serial.print(rgb_sensor.sat);
-  Serial.print(F(" Lum:"));
-  Serial.println(rgb_sensor.lum);
+  Serial.print(F(" Val:"));
+  Serial.println(rgb_sensor.value);
 
   //  uint32_t sum = Clear;
   //  float r, g, b;
@@ -170,7 +170,7 @@ void show_colour(void)
         Serial.println(" - (Blue Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLUE); 
     }  
-    else if (rgb_sensor.g_ratio > rgb_sensor.r_ratio && rgb_sensor.g_ratio > rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.cpl > 2 && rgb_sensor.sat > 0.21 && rgb_sensor.lux < 800 && rgb_sensor.ir > 2000)  
+    else if (rgb_sensor.g_ratio > rgb_sensor.r_ratio && rgb_sensor.g_ratio > rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.cpl > 2 && rgb_sensor.sat > 0.21 )  
     {  
         Serial.println(" - (Green Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_DARKGREEN);
