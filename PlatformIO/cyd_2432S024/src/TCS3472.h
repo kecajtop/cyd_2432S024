@@ -22,7 +22,7 @@ private:
     uint16_t maxcnt;
   };
   static const tcs_agc agc_lst[];
-  uint16_t agc_cur;
+  
 
   void setGainTime(void);
   Adafruit_TCS34725 tcs;
@@ -32,7 +32,7 @@ public:
 
   boolean begin(void);
   void getData(void);
-
+  int16_t agc_cur;
   boolean isAvailable, isSaturated;
   uint16_t againx, atime, atime_ms;
   uint16_t r, g, b, c;
