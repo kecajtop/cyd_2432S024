@@ -1,5 +1,6 @@
 #include "Adafruit_TCS34725.h"
 #include "TCS3472.h"
+#include "macros.h"
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -13,11 +14,11 @@
 // the start and end of the list.
 //
 const tcs34725::tcs_agc tcs34725::agc_lst[] = {
-  { TCS34725_GAIN_60X, TCS34725_INTEGRATIONTIME_614MS,     0, 20000 },
-  { TCS34725_GAIN_60X, TCS34725_INTEGRATIONTIME_154MS,  4990, 63000 },
-  { TCS34725_GAIN_16X, TCS34725_INTEGRATIONTIME_154MS, 16790, 63000 },
-  { TCS34725_GAIN_4X,  TCS34725_INTEGRATIONTIME_154MS, 15740, 63000 },
-  { TCS34725_GAIN_1X,  TCS34725_INTEGRATIONTIME_154MS, 15740, 0 }
+  { TCS34725_GAIN_60X, TCS34725_INTEGRATIONTIME_614MS,     0, 63000 },
+  //{ TCS34725_GAIN_60X, TCS34725_INTEGRATIONTIME_154MS,  0, 63000 }//,
+  //{ TCS34725_GAIN_16X, TCS34725_INTEGRATIONTIME_154MS, 16790, 63000 },
+  //{ TCS34725_GAIN_4X,  TCS34725_INTEGRATIONTIME_154MS, 0, 65535 },
+  //{ TCS34725_GAIN_1X,  TCS34725_INTEGRATIONTIME_154MS, 15740, 0 }
 };
 tcs34725::tcs34725() : agc_cur(0), isAvailable(0), isSaturated(0) {
 }
@@ -62,7 +63,8 @@ void tcs34725::getData(void) {
     else if (agc_lst[agc_cur].mincnt && c < agc_lst[agc_cur].mincnt)
       agc_cur--;
     else break;
-
+    if (agc_cur<0) agc_cur=0;
+    if (agc_cur>=1) agc_cur=0;
     setGainTime();
     delay((256 - atime) * 2.4 * 2); // shock absorber
     tcs.getRawData(&r, &g, &b, &c);
@@ -71,10 +73,10 @@ void tcs34725::getData(void) {
 
   // DN40 calculations
   ir = (r + g + b > c) ? (r + g + b - c) / 2 : 0;
-  r_comp = r - ir;
-  g_comp = g - ir;
-  b_comp = b - ir;
-  c_comp = c - ir;
+  r_comp = r;// - ir;
+  g_comp = g;// - ir;
+  b_comp = b;// - ir;
+  c_comp = c;// - ir;
   cratio = float(ir) / float(c);
 
   saturation = ((256 - atime) > 63) ? 65535 : 1024 * (256 - atime);
@@ -95,21 +97,40 @@ void tcs34725::getData(void) {
     
   hue = sat = lum = (max + min) / 2;
 
-  float diff = max-min; // diff of cmax and cmin.
+  if (max == min) {
+    hue = sat = 0; // achromatic
+  }
+  else 
+  {
+    float d = max - min;
+    //sat = (lum > 0.5) ? d / (2 - max - min) : d / (max + min);
+    
+    if (d == 0)
+    { 
+      sat =0;
+    }
+    else
+    {
+      sat = d/(1-abs((2*lum)-1));
+    }
 
-   if (max == min)
-      hue = 0;
-   else if (max == r)
-      hue = fmod((60 * ((g_ratio - b_ratio) / diff) + 360), 360.0);
-   else if (max == g)
-      hue = fmod((60 * ((b_ratio - r_ratio) / diff) + 120), 360.0);
-   else if (max == b)
-      hue = fmod((60 * ((r_ratio - g_ratio) / diff) + 240), 360.0);
-   // if cmax equal zero
-      if (max == 0)
-         sat = 0;
-      else
-         sat = (diff / max) * 100;
-   // compute v
-   value = max * 100;
+    if (max == r_ratio) {
+      hue = (g_ratio - b_ratio) / d + (g_ratio < b_ratio ? 6 : 0);
+      print_kln("max == r_ratio");
+    }
+    else if (max == g_ratio) {
+      hue = 2 + (b_ratio - r_ratio) / d;
+      print_kln("max == g_ratio");
+    }
+    else if (max == b_ratio) {
+      hue = 4 + (r_ratio - g_ratio) / d;
+      print_kln("max == b_ratio");
+    }
+    hue /= 6;
+    if (hue < 0)
+    {
+      hue += 1;
+    } 
+  }
+
 }

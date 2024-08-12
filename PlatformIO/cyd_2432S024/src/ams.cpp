@@ -64,7 +64,8 @@ void show_colour(void)
   //uint16_t Clear, Red, Green, Blue;
   Serial.println();
   rgb_sensor.getData();
-  Serial.print(F("Gain:"));
+  Serial.print(rgb_sensor.agc_cur);
+  Serial.print(F(" Gain:"));
   Serial.print(rgb_sensor.againx);
   Serial.print(F("x "));
   Serial.print(F("Time:"));
@@ -160,17 +161,19 @@ void show_colour(void)
     //green = calibratedValues[2];
     //blue = calibratedValues[1];
 
-    if (rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.ct < 3500 && rgb_sensor.hue < 0.1 && rgb_sensor.cpl > 2)
+    if (rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.ct < 3500 && rgb_sensor.hue < 0.1)
     {  
         Serial.println(" - (Red Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_RED);
     }    
-    else if (rgb_sensor.b_ratio > rgb_sensor.r_ratio && rgb_sensor.b_ratio > rgb_sensor.g_ratio && rgb_sensor.ct > 9000 && rgb_sensor.hue < 0.1 && rgb_sensor.cpl > 2)   
+    else if (rgb_sensor.b_ratio > rgb_sensor.r_ratio && rgb_sensor.b_ratio > rgb_sensor.g_ratio && rgb_sensor.ct > 9000 && rgb_sensor.hue > 0.51)   
     {  
         Serial.println(" - (Blue Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLUE); 
     }  
-    else if (rgb_sensor.g_ratio > rgb_sensor.r_ratio && rgb_sensor.g_ratio > rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.cpl > 2 && rgb_sensor.sat > 0.21 )  
+
+    else if (rgb_sensor.g_ratio > rgb_sensor.r_ratio && rgb_sensor.g_ratio > rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.hue < 0.41)   
+
     {  
         Serial.println(" - (Green Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_DARKGREEN);
