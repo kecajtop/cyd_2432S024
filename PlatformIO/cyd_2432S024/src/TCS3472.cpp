@@ -132,4 +132,5 @@ void tcs34725::getData(void) {
       hue += 1;
     } 
   }
+
 }

@@ -39,7 +39,7 @@ public:
   uint16_t ir;
   uint16_t r_comp, g_comp, b_comp, c_comp;
   uint16_t saturation, saturation75;
-  float cratio, cpl, ct, lux, maxlux, r_ratio, g_ratio, b_ratio, hue, sat, lum;
+  float cratio, cpl, ct, lux, maxlux, r_ratio, g_ratio, b_ratio, hue, sat, lum, value;
 };
 
 #endif
