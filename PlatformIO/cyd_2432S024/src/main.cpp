@@ -22,6 +22,8 @@
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
+//Adafruit_NeoPixel strip(25, 4, NEO_GRBW + NEO_KHZ800);
+
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 

@@ -7,8 +7,10 @@
 #include "Adafruit_TCS34725.h"
 #include "TCS3472.h"
 
+
 tcs34725 rgb_sensor;
 extern TFT_eSPI tft;
+
 
 //float calibratedValues[AS726x_NUM_CHANNELS];
 
@@ -161,7 +163,7 @@ void show_colour(void)
     //green = calibratedValues[2];
     //blue = calibratedValues[1];
 
-    if (rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.ct < 3500 && rgb_sensor.hue < 0.1)
+    if (rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.r_ratio > rgb_sensor.b_ratio && rgb_sensor.ct < 3800 && rgb_sensor.hue < 0.1)
     {  
         Serial.println(" - (Red Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_RED);
@@ -172,7 +174,7 @@ void show_colour(void)
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLUE); 
     }  
 
-    else if (rgb_sensor.g_ratio > rgb_sensor.r_ratio && rgb_sensor.g_ratio > rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.hue < 0.41)   
+    else if (rgb_sensor.g_ratio >= rgb_sensor.r_ratio && rgb_sensor.g_ratio >= rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.hue <=0.51 && rgb_sensor.sat >=0.99)   
 
     {  
         Serial.println(" - (Green Color)");
