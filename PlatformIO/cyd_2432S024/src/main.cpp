@@ -20,9 +20,8 @@
 #include "ams.h"
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
 
-TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
-//Adafruit_NeoPixel strip(25, 4, NEO_GRBW + NEO_KHZ800);
+TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240

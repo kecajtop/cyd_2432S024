@@ -6,9 +6,13 @@
 #include "simple_tft.h"
 #include "Adafruit_TCS34725.h"
 #include "TCS3472.h"
+#include <Adafruit_NeoPixel.h>
 
 
 tcs34725 rgb_sensor;
+
+Adafruit_NeoPixel strip(25, 4, NEO_GRB + NEO_KHZ800);
+
 extern TFT_eSPI tft;
 
 
@@ -27,6 +31,14 @@ uint16_t barWidth;
 
 bool led = false;
 
+void colorWipe(uint32_t color, int wait) {
+  for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+    strip.show();                          //  Update strip to match
+    delay(wait);                           //  Pause for a moment
+  }
+}
+
 void init_ams(void)
 {
     if(!rgb_sensor.begin())
@@ -37,6 +49,10 @@ void init_ams(void)
     {
       display_selftest_pass_fail("TCS3472",ST_OK);
     }
+
+    strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+    strip.show();            // Turn OFF all pixels ASAP
+    strip.setBrightness(100); // Set BRIGHTNESS to about 1/5 (max = 255)
     //barWidth = tft.width() / AS726x_NUM_CHANNELS/2;
 }
 
@@ -167,11 +183,13 @@ void show_colour(void)
     {  
         Serial.println(" - (Red Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_RED);
+        colorWipe(strip.Color(255,   0,   0), 0); // Red
     }    
     else if (rgb_sensor.b_ratio > rgb_sensor.r_ratio && rgb_sensor.b_ratio > rgb_sensor.g_ratio && rgb_sensor.ct > 9000 && rgb_sensor.hue > 0.51)   
     {  
         Serial.println(" - (Blue Color)");
-        tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLUE); 
+        tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLUE);
+        colorWipe(strip.Color(  0,   0, 255), 0); // Blue
     }  
 
     else if (rgb_sensor.g_ratio >= rgb_sensor.r_ratio && rgb_sensor.g_ratio >= rgb_sensor.b_ratio && rgb_sensor.ct > 5500 && rgb_sensor.ct < 9000 && rgb_sensor.hue > 0.36 && rgb_sensor.hue <=0.51 && rgb_sensor.sat >=0.99)   
@@ -179,10 +197,12 @@ void show_colour(void)
     {  
         Serial.println(" - (Green Color)");
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_DARKGREEN);
+        colorWipe(strip.Color(  0, 255,   0), 0); // Green
     } 
     else
     {
         tft.fillRect(0,120,tft.width()/2,tft.height(),TFT_BLACK);
+        colorWipe(strip.Color(  0,   0, 0), 0); // Black
     }
     /*tft.setTextColor(TFT_BLACK, TFT_WHITE,1); // Do not plot the background colour
     tft.setTextDatum(TL_DATUM);
